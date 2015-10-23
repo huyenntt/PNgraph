@@ -1,0 +1,40 @@
+digraph N {
+ graph [fontname="Helvetica" nodesep=0.35 ranksep="0.35" remincross=true label="An example PN"]
+ node [fontname="Helvetica" fixedsize width=".2" height=".2" label="" style=filled]
+ edge [fontname="Helvetica" color=white arrowhead=none weight="10.0"]
+
+// places
+ node [shape=circle fillcolor=white]
+p3	[fillcolor=black peripheries=2 height=".1" width=".1" ]
+ p3_l	[style=invis]
+ p3_l -> p3 [headlabel="p1"]
+p1	[fillcolor=black peripheries=2 height=".1" width=".1" ]
+ p1_l	[style=invis]
+ p1_l -> p1 [headlabel="p2"]
+p2	[fillcolor=black peripheries=2 height=".1" width=".1" ]
+ p2_l	[style=invis]
+ p2_l -> p2 [headlabel="p3"]
+ 
+ // transitions
+ node [shape=box height="0.1" width="0.25"]
+t1	[]
+ t1_l	[style=invis]
+ t1_l -> t1 [headlabel="t1"]
+t2	[]
+ t2_l	[style=invis]
+ t2_l -> t2 [headlabel="t2"]
+t3	[]
+ t3_l	[style=invis]
+ t3_l -> t3 [headlabel="t3"]
+
+  // arcs
+ edge [fontname="Helvetica" arrowhead=normal color=black]
+ p1 -> t1	[]
+ t1 -> p3	[]
+ p3 -> t1	[]
+ p2 -> t2	[]
+ t2 -> p3	[]
+ p3 -> t2	[]
+ p3 -> t3	[]
+  
+}

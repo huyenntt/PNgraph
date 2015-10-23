@@ -1,0 +1,51 @@
+digraph N {
+ graph [fontname="Helvetica" nodesep=0.35 ranksep="0.35" remincross=true label="An example PN"]
+ node [fontname="Helvetica" fixedsize width=".2" height=".2" label="" style=filled]
+ edge [fontname="Helvetica" color=white arrowhead=none weight="5.0"]
+
+ //events
+ node [shape=box height="0.1" width="0.25"]
+e1	[]
+ e1_l	[style=invis]
+ e1_l -> e1 [headlabel="|_"]
+e2	[]
+ e2_l	[style=invis]
+ e2_l -> e2 [headlabel="t1"]
+e3	[]
+ e3_l	[style=invis]
+ e3_l -> e3 [headlabel="t3"]
+e4	[]
+ e4_l	[style=invis]
+ e4_l -> e4 [headlabel="t3"]
+e5	[]
+ e5_l	[style=invis]
+ e5_l -> e5 [headlabel="t2"]
+
+e6	[]
+ e6_l	[style=invis]
+ e6_l -> e6 [headlabel="t3"]
+e7	[]
+ e7_l	[style=invis]
+ e7_l -> e7 [headlabel="t3"]
+
+ 
+  // arcs
+ edge [fontname="Helvetica" arrowhead=normal color=black]
+ e1 -> e2	[]
+ e1 -> e5	[]
+ e1 -> e4
+ e2 -> e3	[]
+ e5 -> e6	[]
+ e2 -> e6	[]
+ e5 -> e7	[]
+ 
+ edge [style="dashed" arrowtail="none"]
+ e2 -> e4
+ e4 -> e5
+ e5 -> e3
+ e2 -> e7
+ {rankdir=TB}
+ {rank=same e2 e4 e5}
+ {rank=same e3 e6 e7}
+ 
+}

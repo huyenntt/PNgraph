@@ -1,0 +1,168 @@
+digraph N {
+ graph [fontname="Helvetica" nodesep=0.25 ranksep="0.25" remincross=true label="Petri net\n&Omega;=((p4=0) &and; (p0=1) &and; (p1=0) &and; (p2=0) &and; (p3=0))"]
+ node [fontname="Helvetica" fixedsize width=".3" height=".3" label="" style=filled]
+ edge [fontname="Helvetica" color=white arrowhead=none weight="20.0"]
+
+// interface
+/// port 'port0'
+//// input
+ node [shape=circle fillcolor=orange]
+i1
+  i1_l	[style=invis]
+  i1 -> i1_l	[headlabel="E"]
+//// output
+ node [shape=circle fillcolor=yellow]
+
+//// synchronous
+ node [shape=box fillcolor=black]
+
+//// cluster
+ subgraph cluster_port1
+ {
+  i1 i1_l
+  
+  
+  label="port0" style="filled,rounded"; bgcolor=grey95  labelloc=t;
+ }
+
+
+/// port 'port1'
+//// input
+ node [shape=circle fillcolor=orange]
+
+//// output
+ node [shape=circle fillcolor=yellow]
+o1
+  o1_l	[style=invis]
+  o1 -> o1_l	[headlabel="B"]
+//// synchronous
+ node [shape=box fillcolor=black]
+
+//// cluster
+ subgraph cluster_port2
+ {
+  
+  o1 o1_l
+  
+  label="port1" style="filled,rounded"; bgcolor=grey95  labelloc=t;
+ }
+
+
+/// port 'port2'
+//// input
+ node [shape=circle fillcolor=orange]
+
+//// output
+ node [shape=circle fillcolor=yellow]
+
+//// synchronous
+ node [shape=box fillcolor=black]
+s2	[width=.1]
+  s2_l	[style=invis]
+  s2 -> s2_l	[headlabel="C"]
+//// cluster
+ subgraph cluster_port3
+ {
+  
+  
+  s2 s2_l
+  label="port2" style="filled,rounded"; bgcolor=grey95  labelloc=t;
+ }
+
+
+/// port 'port3'
+//// input
+ node [shape=circle fillcolor=orange]
+
+//// output
+ node [shape=circle fillcolor=yellow]
+
+//// synchronous
+ node [shape=box fillcolor=black]
+s1	[width=.1]
+  s1_l	[style=invis]
+  s1 -> s1_l	[headlabel="T"]
+//// cluster
+ subgraph cluster_port4
+ {
+  
+  
+  s1 s1_l
+  label="port3" style="filled,rounded"; bgcolor=grey95  labelloc=t;
+ }
+
+
+
+// places
+ node [shape=circle fillcolor=white]
+p1	[fillcolor=black peripheries=2 height=".2" width=".2" ]
+ p1_l	[style=invis]
+ p1_l -> p1 [headlabel="p0"]
+p2	[]
+ p2_l	[style=invis]
+ p2_l -> p2 [headlabel="p1"]
+p3	[]
+ p3_l	[style=invis]
+ p3_l -> p3 [headlabel="p2"]
+p4	[]
+ p4_l	[style=invis]
+ p4_l -> p4 [headlabel="p3"]
+p5	[]
+ p5_l	[style=invis]
+ p5_l -> p5 [headlabel="p4"]
+ // transitions
+ node [shape=box]
+t1	[fillcolor=orange]
+ t1_l	[style=invis]
+ t1_l -> t1 [headlabel="t1"]
+t2	[]
+ t2_l	[style=invis]
+ t2_l -> t2 [headlabel="t2"]
+t3	[]
+ t3_l	[style=invis]
+ t3_l -> t3 [headlabel="t3"]
+t4	[fillcolor=yellow]
+ t4_l	[style=invis]
+ t4_l -> t4 [headlabel="t4"]
+t5	[fillcolor=yellow]
+ t5_l	[style=invis]
+ t5_l -> t5 [headlabel="t5"]
+t6	[]
+ t6_l	[style=invis]
+ t6_l -> t6 [headlabel="t6"]
+
+ // inner cluster
+ subgraph cluster1
+ {
+  t1 t1_l t2 t2_l t3 t3_l t4 t4_l t5 t5_l t6 t6_l
+  p1 p1_l p2 p2_l p3 p3_l p4 p4_l p5 p5_l
+  label="" style="dashed"
+ }
+
+ // arcs
+ edge [fontname="Helvetica" arrowhead=normal color=black]
+ t6 -> p1	[]
+ p1 -> t1	[]
+ p2 -> t2	[]
+ t1 -> p2	[]
+ p2 -> t3	[]
+ p3 -> t4	[]
+ t2 -> p3	[]
+ p4 -> t5	[]
+ t3 -> p4	[]
+ t5 -> p5	[]
+ t4 -> p5	[]
+ p5 -> t6	[]
+ i1 -> t1	[weight=10000.0]
+
+ s2 -> t2	[weight=10000.0 arrowhead=none]
+
+ s1 -> t3	[weight=10000.0 arrowhead=none]
+
+ t4 -> o1	[weight=10000.0]
+
+ t5 -> o1	[weight=10000.0]
+
+
+}
+
