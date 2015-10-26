@@ -1,13 +1,16 @@
 \documentclass[11pt]{article}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{ntheorem}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{amssymb}
+\usepackage{algorithm,algorithmicx}
+\usepackage[noend]{algpseudocode}
 \newtheorem{definition}{Definition}
-\newtheorem{algorithm}{Algorithm}
 \newtheorem{function}{Function}
 \graphicspath{{./PNgraph/}}
+
 \begin{document}
 \title{Implement Unfolding based POR Algorithm}
 \author{Huyen Nguyen}
@@ -16,34 +19,49 @@
 
 \section{Building labelled event structure - parametric semantics}
 \subsection{Define the independent relation}
-	Find out all pairs of transition commuting at every global state of the net.
-	Global state is a marking. 
-	\begin{itemize}
-	\item compute all reachable markings(already implemented in simple model checker SMC)
-	\item Check if transition t is enabled at state s: $check_enabled(t,s)$ (implemented in PNAPI)
-	\item Function to check if $t_1$ and $t_2$ commute or not.\\
-			check\_commute$(t_1,t_2)$ returns $true$ if $t_1$ and $t_2$ commute and $false$ in reverse.
-	\item Call $check\_commute(t_1,t_2)$ for all pairs of transitions, then store all independent pairs in a set
-	\end{itemize}
 
-\begin{definition}
-	Two transitions t and t' are commuted if:
+\begin{definition}{Commutativity}
+	Two transitions t and t' are commuted if at every state (reachable marking) s:
 	\begin{enumerate}
-		\item The first condition: If $t, t'\in enable(s) and s\rightarrow ^t s' \Longrightarrow t'\in enable(s')$ 				can be implemented as:
+		\item $t, t'\in enable(s) and s\rightarrow ^t s' \Longrightarrow t'\in enable(s')$ 		
 		
-		if  $\left( \left((check\_in\_enabl(t,s)\&\& check\_in\_enabl(t',s))\right)
-		==check\_in\_enabl(t',fire(s,t)) \right)$
-		
-		$\qquad$ return true;
-		
-		$ fire(s,t)$ is a new state reached by firing t at s - function getSuccessor(t) in Marking class
-				
-		\item If $t, t' \in enable(s) and \exists s": s\xrightarrow{t.t'} s" then s\xrightarrow{t'.t} s"$ 
-		
-		if $\left(check\_in\_enabl(t,s)\&\& check\_in\_enabl(t',s)\right) == 													\left(fire(fire(s,t),t')==fire(fire(s,t'),t)\right)$
+		$ fire(s,t)$ is a new state reached by firing t at s
+		\item $t, t' \in enable(s) and \exists s": s\xrightarrow{t.t'} s" then s\xrightarrow{t'.t} s"$ 
 		
 	\end{enumerate}
 \end{definition}
+
+	Set up independent set:
+	\begin{itemize}
+	\item compute all reachable markings (already implemented in simple model checker SMC)
+	\item For all pairs $(t_1,t_2)$, check if $t_1$ and $t_2$ commute or not: $check\_commute(t_1,t_2)$ 
+	\item if yes, store all independent pairs in a set
+	\end{itemize}	
+	
+\begin{algorithm}{}
+\caption{Commutativity algorithm}\label{alg:cmt}
+\begin{algorithmic}[1]
+\Function {$check\_commute$}{$a,b$}
+ 	\For {reachable markings s}
+		\If {s enables one of t and t'}
+			\State{return false}
+		\Else
+			\If{s enables both t and t'}
+				\State {s'= fire(s,t)}
+				\State {s"= fire(s,t')}
+				\If {s' enables t' and (fire(s',t') == fire(s",t))}
+					\State {continue}
+				\Else
+					\State {return false}
+				\EndIf
+			\EndIf
+		\EndIf
+	\EndFor
+	\Return{true}
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
 
 \subsection{Construct unfolding under the independent relation for a petri net}
 	This part details the process of constructing the unfolding (set of prefix) for a petri net under independent 			relation defined in previous section.
@@ -59,54 +77,42 @@
 		
 	\end{enumerate}
 	\end{definition}
-
-
-	\begin{function}{Construct unfolding\\}
-		Extend() $\backslash\backslash \thickspace \varepsilon$ is a unfolding prefix, initially 								$\varepsilon=\bot$\\
-		\{
 	
-			For each last event (event just added) $e_i$ of $\varepsilon$, do
-			
-			\texttt{$//$ check only maximal event because all extendable events had already been computed and added 						to the stack \textbf{extendable} in previous step } 
-			
-			\{	\\
-								
-			 	For each transition t in transition set
-			 		
-			 		if ($e_i.getState().activates(t)$)
-					
-				\qquad if $is\_depend(t, e_i.lbl)==true $
-						$//$ can't find $<e_i.lbl,t>$ in independent set
-		
-					\qquad\qquad make a new Event with $lbl=t$; $his = \{e\_i\}$ to the stack \textbf{extendable} 
-					
-				\qquad else 	$//$ $<e_i.lbl,t>$ in the set of independent relation
-				
-						\qquad \{			
-						\begin{itemize}
-						\renewcommand\labelitemi{-}
-							\item \qquad search in set of events of LES, if exists an event $e\_j$ with label t
-							\item \qquad compute the 	$state(\sigma)$ with a run $\sigma=t.(e\_i.lbl)$ or 													$(e\_i.lbl).t$
-							\item \qquad find all enabled transitions t' at the state.
-							\item \qquad Add event $\langle t', \{e_i,e_j\}\rangle$ to the stack \textbf{extendable}
-						\end{itemize}
-							
-						\qquad \}
-			
-				Pop up an event e from the stack to do: 
-				
-					\qquad LES.add(e); \textbf{extendable} and add it to LES
-						
-					\qquad e.computeCfl(); $//$ \texttt{find out all events in conflict with e}
-						
-					\qquad e.computeState(); $//$ \texttt{compute the marking corresponding to e: 													getSuccessor(e.lbl)}
-					
-				\}
-	
-				Call Extend($\varepsilon'$)\\
-		\}
-\end{function}
+	\begin{verse}
+		$\varepsilon$ is a unfolding prefix, initially $\varepsilon=\bot$\\
+		\texttt{$//$ check only maximal event because all extendable events had already been computed and added 					to the stack \textbf{extendable} in previous step } 
+		$//$ can't find $<e_i.lbl,t>$ in independent set
 
+	\end{verse}
+
+
+\begin{algorithm}
+\caption{Extend LES}
+\begin{algorithmic}[1]
+\Procedure {Extend}{}
+\State {extStack := $\bot$}
+	\While {\let\emptyset\varnothing extStack != $\emptyset$}
+		\State {Pop up an event e from the stack}
+		\State {Marking $s:= state(e_i)$}
+		\State {Get all transitions activated (enabled) at s}
+	 	\If {$t, e.lbl$ are not independent}
+			\State {make a new Event with $lbl=t$; $his =\{e\}$}
+			\State {add it to the stack \textbf{extendable}}
+		\Else
+			\State {search in set of events of LES, if exists an event $e'$ with label t}
+			\State {compute the $state(\sigma)$ with a run $\sigma=t.(e.lbl)$ or $(e.lbl).t$}
+			\State {find all enabled transitions t' at that state}
+			\State {creat new event with $\langle t',\{e,e'\}\rangle$ and compute the reached state}
+			\State {Add event to the stack \textbf{extendable}}
+		\EndIf
+		\State {add e to LES; \textbf{extendable} and add it to LES}
+		\State {Compute set of transitions in conflict with e}
+	\EndWhile
+	\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+	
 	To implement the algorithm, we construct a class Event:
 	
 	\begin{definition}{Event\\}
@@ -228,39 +234,110 @@
 	\end{figure}
 
 	\subsection{Overall algorithm}
-		\begin{algorithm}{POR exploration algorithm} \\
-			\textup{Procedure Explore(C,D,A)} \\
-			\{	
-					
-				\textup{Extend(C)}
-				
-				\let\emptyset\varnothing
-				if $ en(C) = \emptyset $  return
-				
-				if $A=\emptyset$
-		
-					\textup{Choose e from en(C)}
-				
-				else
-				
-					 e form $A\cap en(C)$
-					
-				\textup{Explore($C\cup\{e\},D,A\setminus\{e\}$ )}
-				
-				If $\exists J \in Alt(C,D\cup\{e\})$
-				
-				$Explore(C,D\cup\{e\},J\setminus C)$
-				
-				\textup{Remove(e,C,D)}\\
-			\}
+	\begin{verse}
 			
+		U is a virtual set of all events with attribute $seen=true$
+	
+		G is a virtual set of all events with attribute $in\_gabage=true$
+		
+		D is a virtual set of all events with attribute $disbale=true$
+		
+		A is a virtual set of all events with attribute $add=true$
+		
+		Attribute $visited$ of an event increases by 1 whenever it is visted
+		
+		C is a configuraition which also store the maximal events. All events in c are marked with $in\_C=true$
+		
+		J is a configuration possible to add after C as alternative to D
+		
+	\end{verse}
+	
+		\begin{algorithm}
+		\caption{: POR Exploration algorithm}
+		\begin{algorithmic}[1]
+			\Procedure {Explore}{C,D,A}
+				\State {Extend(C)}
+				\let\emptyset\varnothing
+				\If {$ en(C) = \emptyset $}
+					\Return {}
+				\EndIf
+				\If {$A=\emptyset$}
+					\State {	\textup{Choose e from en(C)}}
+				\Else
+					\State {e form $A\cap en(C)$}
+				\EndIf
+				
+				\State {Explore($C\cup\{e\},D,A\setminus\{e\}$ )}
+				
+				\If {$\exists J \in Alt(C,D\cup\{e\})$}
+				
+					\State {$Explore(C,D\cup\{e\},J\setminus C)$}
+				\EndIf
+				\State {Remove(e,C,D)}
+			\EndProcedure
+		\end{algorithmic}
+		\end{algorithm}
+		
+		\begin{algorithm}
+		\caption{find alternative event}
+		\begin{algorithmic}
+			\Procedure {findAlt}{\thickspace}
+				\State possible :=true
+				\For {each event e in U}
+					\If {maximal events of C are in history of e}
+						\For {all events e' in D - $disable=true$}
+							\If {e not conflict with e'}
+								\State {possbile=false}								
+								\State {break}
+							\EndIf
+						\EndFor
+						\If {possible==true}
+							\State {$J:=J + \{e\}$}
+						\EndIf
+					\EndIf
+				\EndFor		
+			\EndProcedure
+		\end{algorithmic}
 		\end{algorithm}
 		
 	\subsubsection{A configuration}
-		- Check if a set of events is a configuration is\_config()\\
+		
 		\textit{A configuration is a set of events that are causally closed and conflict free.}
 		
+		- Declared as a set of maximal events
 		
+		- Member function: 
+			
+			+ computeState(C) : compute marking reachable by running set of events in C
+			
+		\subsubsection{Compute ex(C)}
+		Compute a set of events extendable at a given configuration C
+		\begin{algorithm}
+		\begin{algorithmic}
+			\Function {ex}{C}
+				\For {all events e in LES}
+					\If ($e'in e.his$ and $e'.in\_C=true$)
+						\State {add e to ex}
+					\EndIf
+				\EndFor
+			\Return {ex}
+			\EndFunction
+		\end{algorithmic}
+		\end{algorithm}			
+			
 		\subsubsection{Compute en(C)}
 		Compute a set of events enabled at a given configuration C
+		\begin{algorithm}
+		\begin{algorithmic}
+			\Function {enable}{C}
+				\State {s=state(C)}
+				\For {all events e in ex }
+					\If {s enable e.lbl}
+						\State {add e to en}
+					\EndIf
+				\EndFor
+			\EndFunction
+		\end{algorithmic}
+		\end{algorithm}
 \end{document}
+

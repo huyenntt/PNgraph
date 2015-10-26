@@ -20,7 +20,7 @@ public:
 	Config(){evt.clear();}
 	Config(const Config & c);
 	Marking computeState();
-	bool is_inConfig(Event e); // check if e is in the configuration
+	bool is_inConfig(Event e); // check if e is in the configuration- dont need
 	std::vector<Event *> getEvents(){return evt;}
 	Config add(Event & e);
 	Config & Config::operator=(const Config & m);

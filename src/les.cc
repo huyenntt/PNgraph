@@ -107,7 +107,7 @@ Config LES::find_alt(const Config & C, const std::set<Event *> & D)
 	std::set<Event*>::iterator e;
 	for (e=events.begin(); e!=events.end(); e++)
 	{
-		if (e*).getVisited()== true
+		if (e*).getSeen()== true
 		{
 			std::set<Event*> tmp;
 			temp.insert(C.getEvents(),it*);
